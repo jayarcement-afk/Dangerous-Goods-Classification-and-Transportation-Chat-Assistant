@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ul-red: #c8102e;
+  --color-ul-red-dark: #a00d24;
+  --color-ul-red-hover: #e4002b;
+  --color-ul-maroon: #7b1f3a;
+  --color-ul-maroon-dark: #5c1528;
+  --color-ul-maroon-light: #9a2d4a;
+  --color-ul-tint: #faf0f2;
+  --color-ul-tint-deep: #f0dde2;
+  --color-ul-neutral-900: #1a1a1a;
+  --color-ul-neutral-800: #2d2d2d;
+  --color-ul-neutral-700: #4a4a4a;
+  --color-ul-neutral-500: #6b6b6b;
+  --color-ul-neutral-300: #c4c4c4;
+  --color-ul-neutral-200: #e8e8e8;
+  --color-ul-neutral-100: #f5f5f5;
+  --color-ul-neutral-50: #fafafa;
+  --font-sans: "Segoe UI", "Helvetica Neue", Arial, system-ui, -apple-system, sans-serif;
+  --shadow-ul-card: 0 2px 8px rgba(91, 21, 40, 0.08);
+  --shadow-ul-card-hover: 0 8px 24px rgba(91, 21, 40, 0.12);
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ul-neutral-900);
+  background: #ffffff;
+}
+
+.ul-section-eyebrow {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-ul-neutral-700);
+}
+
+.ul-section-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-ul-maroon-dark);
+}
+
+@media (min-width: 640px) {
+  .ul-section-title {
+    font-size: 2rem;
+  }
+}
+
+.ul-hero-gradient,
+.ul-agent-hero {
+  background: linear-gradient(
+    135deg,
+    var(--color-ul-maroon-dark) 0%,
+    var(--color-ul-maroon) 45%,
+    #6b1830 75%,
+    var(--color-ul-maroon-light) 100%
+  );
+}
+
+.ul-gradient-card {
+  background: linear-gradient(
+    135deg,
+    var(--color-ul-red) 0%,
+    var(--color-ul-maroon-light) 50%,
+    var(--color-ul-maroon-dark) 100%
+  );
+}
+
+.ul-card-lift {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.ul-card-lift:hover {
+  box-shadow: var(--shadow-ul-card-hover);
+  transform: translateY(-2px);
+}

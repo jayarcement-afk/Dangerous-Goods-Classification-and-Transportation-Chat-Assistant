@@ -1,0 +1,43 @@
+{
+  "name": "dg-chat-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "ingest": "tsx scripts/ingest-orange-book.ts",
+    "ingest:table-c": "tsx scripts/ingest-orange-book.ts -- --source table-c-adn",
+    "backfill:embeddings": "tsx scripts/backfill-embeddings.ts",
+    "eval": "tsx evaluation/run.ts",
+    "eval:ci": "tsx evaluation/run.ts --ci",
+    "db:types": "echo 'Run: npx supabase gen types typescript --local > src/lib/database.types.ts'"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.49.8",
+    "clsx": "^2.1.1",
+    "next": "^15.3.3",
+    "openai": "^6.39.0",
+    "pdfjs-dist": "^5.7.284",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.3.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@tailwindcss/postcss": "^4.1.8",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "dotenv": "^16.6.1",
+    "eslint": "^9.27.0",
+    "eslint-config-next": "^15.3.3",
+    "tailwindcss": "^4.1.8",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

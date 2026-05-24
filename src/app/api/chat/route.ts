@@ -3,6 +3,7 @@ import { z } from "zod";
 import { buildStarterPromptClarification } from "@/lib/agents/starter-prompts";
 import { runChatOrchestrator } from "@/lib/agents/orchestrator";
 import { getChatEnvError } from "@/lib/env/validate-chat";
+import { toClientSafeError } from "@/lib/env/sanitize-error";
 import { PROMPT_VERSION } from "@/lib/agents/prompts";
 
 export const runtime = "nodejs";
@@ -52,11 +53,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid request", details: error.flatten() }, { status: 400 });
     }
     console.error("[/api/chat]", error);
-    const detail = error instanceof Error ? error.message : "Unknown error";
+    const detail = toClientSafeError(error);
     return NextResponse.json(
       {
         status: "refusal",
-        refusalReason: `A system error occurred: ${detail}. If this is on Vercel, confirm OPENAI_API_KEY and Supabase variables are set for Production.`,
+        refusalReason: `A system error occurred: ${detail}`,
         modelVersion: "unknown",
         promptVersion: PROMPT_VERSION,
       },

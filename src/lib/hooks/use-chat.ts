@@ -42,10 +42,7 @@ export function useChat(initialQuestion = "") {
         }
 
         let assistantText = "";
-        if (data.status === "answer" && data.answer) {
-          assistantText = data.answer;
-          setCitations(data.citations ?? []);
-        } else if (data.status === "clarification") {
+        if (data.status === "clarification") {
           const profileLines =
             data.substanceProfile?.assumptions?.length &&
             data.substanceProfile.status !== "ambiguous"
@@ -67,9 +64,15 @@ export function useChat(initialQuestion = "") {
             .filter((line, i, arr) => line !== "" || (i > 0 && arr[i - 1] !== ""))
             .join("\n");
           setCitations([]);
+        } else if (data.status === "answer" && data.answer) {
+          assistantText = data.answer;
+          setCitations(data.citations ?? []);
         } else {
           assistantText = data.refusalReason ?? "I cannot answer without sufficient cited sources.";
           setCitations([]);
+          if (!res.ok) {
+            setError(assistantText);
+          }
         }
 
         setMessages((prev) => [

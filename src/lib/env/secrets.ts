@@ -12,7 +12,8 @@ export function readSecret(envName: string, fileEnvName?: string): string | unde
 
   const absolute = resolve(process.cwd(), filePath);
   if (!existsSync(absolute)) {
-    throw new Error(`${fileVar} points to missing file: ${absolute}`);
+    console.warn(`[secrets] ${fileVar} points to missing file: ${absolute}`);
+    return undefined;
   }
 
   return readFileSync(absolute, "utf8").trim();

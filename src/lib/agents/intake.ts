@@ -4,11 +4,13 @@ import {
   buildConversationContext,
   defaultClarificationQuestions,
   detectHeuristicClarification,
+  hasConcreteSubstanceIdentity,
   resolveIntent,
   resolveOutOfScope,
   type ChatTurn,
   type IntakeIntent,
 } from "@/lib/agents/intake-rules";
+import { isExampleStarterPrompt } from "@/lib/constants";
 
 export type IntakeResult = {
   intent: IntakeIntent;
@@ -24,16 +26,40 @@ export async function runIntakeAssessment(
 ): Promise<IntakeResult & { allClarifyingQuestions: string[]; fullContext: string }> {
   const fullContext =
     options?.fullContext ?? buildConversationContext(message, options?.history);
+
+  const heuristicQuestions = detectHeuristicClarification(
+    message,
+    "classify_item",
+    fullContext,
+  );
+
+  if (
+    isExampleStarterPrompt(message) &&
+    !hasConcreteSubstanceIdentity(message) &&
+    heuristicQuestions.length > 0
+  ) {
+    return {
+      intent: "classify_item",
+      needsClarification: true,
+      clarifyingQuestions: heuristicQuestions,
+      isPromptInjection: false,
+      isOutOfScope: false,
+      allClarifyingQuestions: heuristicQuestions,
+      fullContext,
+    };
+  }
+
   const llmIntake = await runIntakeAgent(fullContext);
   const intent = resolveIntent(llmIntake.intent, message, fullContext);
   const isOutOfScope = resolveOutOfScope(llmIntake.isOutOfScope, message, fullContext);
 
-  const heuristicQuestions = detectHeuristicClarification(message, intent, fullContext);
-  const merged = [
-    ...new Set([...llmIntake.clarifyingQuestions, ...heuristicQuestions].filter(Boolean)),
-  ];
+  const allHeuristic = detectHeuristicClarification(message, intent, fullContext);
+  const merged =
+    allHeuristic.length > 0 && isExampleStarterPrompt(message)
+      ? allHeuristic
+      : [...new Set([...llmIntake.clarifyingQuestions, ...allHeuristic].filter(Boolean))];
 
-  const needsClarification = llmIntake.needsClarification || heuristicQuestions.length > 0;
+  const needsClarification = llmIntake.needsClarification || allHeuristic.length > 0;
 
   const allClarifyingQuestions =
     merged.length > 0 ? merged : needsClarification ? defaultClarificationQuestions(intent) : [];

@@ -55,6 +55,46 @@ export const ALL_INGEST_SOURCES: IngestSourceConfig[] = [
   ...ORANGE_BOOK_SOURCES,
 ];
 
+export type SourceCorpusEntry = {
+  id: string;
+  title: string;
+  edition: string;
+  url: string;
+  description: string;
+  usedFor: string;
+};
+
+/** Approved retrieval sources indexed for DG Assistant (v1). */
+export const SOURCE_CORPUS: SourceCorpusEntry[] = [
+  {
+    id: DANGEROUS_GOODS_LIST_SOURCE.id,
+    title: DANGEROUS_GOODS_LIST_SOURCE.title,
+    edition: DANGEROUS_GOODS_LIST_SOURCE.edition,
+    url: DANGEROUS_GOODS_LIST_SOURCE.url,
+    description:
+      "UNECE dangerous goods list (Table C) with UN numbers, proper shipping names, hazard classes, and classification codes. This is the default lookup when you provide a chemical name or UN number.",
+    usedFor: "Substance identification, UN ↔ proper shipping name, hazard class",
+  },
+  {
+    id: ORANGE_BOOK_SOURCES[0].id,
+    title: ORANGE_BOOK_SOURCES[0].title,
+    edition: ORANGE_BOOK_SOURCES[0].edition,
+    url: ORANGE_BOOK_SOURCES[0].url,
+    description:
+      "UN Recommendations on the Transport of Dangerous Goods — Model Regulations, Volume I. Covers general provisions, classification principles, and transport requirements cited in answers.",
+    usedFor: "Classification rules, packaging, marking, and transport provisions",
+  },
+  {
+    id: ORANGE_BOOK_SOURCES[1].id,
+    title: ORANGE_BOOK_SOURCES[1].title,
+    edition: ORANGE_BOOK_SOURCES[1].edition,
+    url: ORANGE_BOOK_SOURCES[1].url,
+    description:
+      "Model Regulations Volume II — continuation of the Orange Book corpus. Used alongside Volume I for additional requirements and special provisions referenced in chat responses.",
+    usedFor: "Supplementary Model Regulations passages and special provisions",
+  },
+];
+
 export const V1_FLOWS = [
   {
     id: "classify",

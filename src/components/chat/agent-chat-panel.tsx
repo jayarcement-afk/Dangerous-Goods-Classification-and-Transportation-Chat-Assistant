@@ -17,7 +17,7 @@ export function AgentChatPanel({
   className,
   inputId = "agent-question",
 }: AgentChatPanelProps) {
-  const { input, setInput, messages, citations, loading, error, submit, askPrompt } =
+  const { input, setInput, messages, citations, loading, error, submit, askPrompt, reset } =
     useChat(initialQuestion);
 
   const [showAllCitations, setShowAllCitations] = useState(false);
@@ -205,14 +205,24 @@ export function AgentChatPanel({
             disabled={loading}
           />
           {error && <p className="mt-2 text-sm text-[var(--color-ul-red)]">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading || !input.trim()}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[var(--color-ul-red)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--color-ul-red-hover)] disabled:opacity-50"
-          >
-            <SparkleIcon className="h-4 w-5 text-white" />
-            {loading ? "Thinking…" : `Ask ${AGENT_NAME}`}
-          </button>
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-ul-red)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--color-ul-red-hover)] disabled:opacity-50"
+            >
+              <SparkleIcon className="h-4 w-5 text-white" />
+              {loading ? "Thinking…" : `Ask ${AGENT_NAME}`}
+            </button>
+            <button
+              type="button"
+              onClick={reset}
+              disabled={loading}
+              className="ml-auto inline-flex items-center rounded-lg bg-black px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50"
+            >
+              Reset
+            </button>
+          </div>
         </form>
       </div>
     </div>

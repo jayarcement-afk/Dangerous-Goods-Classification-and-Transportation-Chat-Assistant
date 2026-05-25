@@ -10,7 +10,7 @@ const footerLinks = [
   },
   {
     title: "Policy",
-    links: [{ label: "Source corpus", href: "/" }],
+    links: [{ label: "Source corpus", href: "/source-corpus" }],
   },
 ];
 

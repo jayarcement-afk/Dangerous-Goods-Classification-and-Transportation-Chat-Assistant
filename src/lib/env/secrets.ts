@@ -3,7 +3,7 @@ import { resolve } from "path";
 
 /** Read a secret from env var or from a file path (one line, trimmed). */
 export function readSecret(envName: string, fileEnvName?: string): string | undefined {
-  const direct = process.env[envName]?.trim();
+  const direct = process.env[envName]?.trim().replace(/^['"]|['"]$/g, "");
   if (direct) return direct;
 
   const fileVar = fileEnvName ?? `${envName}_FILE`;

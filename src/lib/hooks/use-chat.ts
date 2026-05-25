@@ -95,6 +95,13 @@ export function useChat(initialQuestion = "") {
     [submit],
   );
 
+  const reset = useCallback(() => {
+    setMessages([]);
+    setCitations([]);
+    setError(null);
+    setInput("");
+  }, []);
+
   return {
     input,
     setInput,
@@ -104,5 +111,6 @@ export function useChat(initialQuestion = "") {
     error,
     submit,
     askPrompt,
+    reset,
   };
 }

@@ -121,6 +121,10 @@ const ALLCAPS_CHEMICAL =
 const EMBEDDED_CHEMICAL =
   /\b(?:contains?|has|with|including|compris(?:ed|ing)?\s+of)\s+(?:\d+(?:\.\d+)?\s*%?\s*)?([A-Za-z][A-Za-z0-9, \-()]{3,}?)(?:\s+in\b|\s+and\b|\s+or\b|,|\.|$)/gi;
 
+/** e.g. "class for acetic anhydride" (common on mobile keyboards) */
+const CHEMICAL_AFTER_FOR =
+  /\b(?:for|of)\s+([A-Za-z][A-Za-z0-9-]+(?:\s+[A-Za-z][A-Za-z0-9-]+){0,4})\b/gi;
+
 export function normalizeChemicalName(name: string): string {
   return name.trim().replace(/\s+/g, " ").toUpperCase();
 }
@@ -196,13 +200,39 @@ export function pickPrimaryChemicalName(chemicals: string[]): string | null {
   );
 }
 
+function extractAllCapsChemicals(
+  text: string,
+  consumed: Array<{ start: number; end: number }>,
+  add: (raw: string, start?: number, end?: number) => void,
+): void {
+  const isInsideConsumed = (start: number, end: number) =>
+    consumed.some((r) => start >= r.start && end <= r.end);
+
+  ALLCAPS_COMMA_PSN.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = ALLCAPS_COMMA_PSN.exec(text)) !== null) {
+    if (m[1]) add(m[1], m.index, m.index + m[0].length);
+  }
+
+  ALLCAPS_MULTI_WORD.lastIndex = 0;
+  while ((m = ALLCAPS_MULTI_WORD.exec(text)) !== null) {
+    if (m[1]) add(m[1], m.index, m.index + m[0].length);
+  }
+
+  ALLCAPS_CHEMICAL.lastIndex = 0;
+  while ((m = ALLCAPS_CHEMICAL.exec(text)) !== null) {
+    if (!m[1]) continue;
+    const start = m.index;
+    const end = m.index + m[0].length;
+    if (isInsideConsumed(start, end)) continue;
+    add(m[1], start, end);
+  }
+}
+
 export function extractChemicalNamesFromText(text: string): string[] {
   const found: string[] = [];
   const seen = new Set<string>();
   const consumed: Array<{ start: number; end: number }> = [];
-
-  const isInsideConsumed = (start: number, end: number) =>
-    consumed.some((r) => start >= r.start && end <= r.end);
 
   const add = (raw: string, start?: number, end?: number) => {
     const name = normalizeChemicalName(raw);
@@ -221,23 +251,14 @@ export function extractChemicalNamesFromText(text: string): string[] {
     if (m[1]) add(m[1], m.index, m.index + m[0].length);
   }
 
-  ALLCAPS_COMMA_PSN.lastIndex = 0;
-  while ((m = ALLCAPS_COMMA_PSN.exec(text)) !== null) {
+  CHEMICAL_AFTER_FOR.lastIndex = 0;
+  while ((m = CHEMICAL_AFTER_FOR.exec(text)) !== null) {
     if (m[1]) add(m[1], m.index, m.index + m[0].length);
   }
 
-  ALLCAPS_MULTI_WORD.lastIndex = 0;
-  while ((m = ALLCAPS_MULTI_WORD.exec(text)) !== null) {
-    if (m[1]) add(m[1], m.index, m.index + m[0].length);
-  }
-
-  ALLCAPS_CHEMICAL.lastIndex = 0;
-  while ((m = ALLCAPS_CHEMICAL.exec(text)) !== null) {
-    if (!m[1]) continue;
-    const start = m.index;
-    const end = m.index + m[0].length;
-    if (isInsideConsumed(start, end)) continue;
-    add(m[1], start, end);
+  extractAllCapsChemicals(text, consumed, add);
+  if (text !== text.toUpperCase()) {
+    extractAllCapsChemicals(text.toUpperCase(), consumed, add);
   }
 
   return found;

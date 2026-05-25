@@ -1045,6 +1045,9 @@ function isGenericIntakeQuestion(q: string): boolean {
   );
 }
 
+const CLASS_OR_PG_LOOKUP =
+  /\b(?:what\s+(?:is|'s)\s+the\s+)?(?:(?:hazard\s+)?class|packing\s+group|pg|proper\s+shipping\s+name|un\s+number)\s+(?:for|of)\b/i;
+
 export function shouldBlockForClarification(
   intent: IntakeIntent,
   profile: SubstanceProfile,
@@ -1053,14 +1056,26 @@ export function shouldBlockForClarification(
 ): boolean {
   if (questions.length === 0) return false;
 
+  const message = options?.message ?? "";
+  const contextText = options?.fullContext
+    ? `${options.fullContext}\n${message}`
+    : message;
+
   if (
-    options?.message &&
-    isExampleStarterPrompt(options.message) &&
-    !hasConcreteSubstanceIdentity(
-      options.fullContext ? `${options.fullContext}\n${options.message}` : options.message,
-    )
+    message &&
+    isExampleStarterPrompt(message) &&
+    !hasConcreteSubstanceIdentity(contextText)
   ) {
     return true;
+  }
+
+  if (
+    message &&
+    CLASS_OR_PG_LOOKUP.test(message) &&
+    (profile.identifiers.unNumbers.length > 0 ||
+      extractChemicalNamesFromText(contextText).length > 0)
+  ) {
+    return false;
   }
 
   if (

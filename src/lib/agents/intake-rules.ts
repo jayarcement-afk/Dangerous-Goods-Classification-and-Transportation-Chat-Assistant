@@ -104,60 +104,68 @@ export function hasConcreteSubstanceIdentity(text: string): boolean {
   return false;
 }
 
+const CLASS_OR_PG_LOOKUP =
+  /\b(?:what\s+(?:is|'s)\s+the\s+)?(?:(?:hazard\s+)?class|packing\s+group|pg|proper\s+shipping\s+name|un\s+number)\s+(?:for|of)\b/i;
+
 export function detectHeuristicClarification(
   message: string,
   intent: IntakeIntent,
   fullContext: string,
 ): string[] {
   const questions: string[] = [];
-  const text = `${fullContext}\n${message}`.toLowerCase();
+  const rawText = `${fullContext}\n${message}`;
+  const textLower = rawText.toLowerCase();
 
   if (
     isExampleStarterPrompt(message) &&
-    !hasConcreteSubstanceIdentity(`${fullContext}\n${message}`)
+    !hasConcreteSubstanceIdentity(rawText)
   ) {
     return [SUBSTANCE_IDENTITY_CLARIFICATION];
   }
 
-  if (hasNamedSubstance(text) && TRANSPORT_REQUIREMENTS_QUERY.test(text)) {
-    return [];
-  }
-
-  if (UN_ONLY_OR_PRIMARY.test(text) || /\bUN\s*\d{4}\b/i.test(message)) {
-    return [];
-  }
-
-  const chemicals = extractChemicalNamesFromText(text);
+  const chemicals = extractChemicalNamesFromText(rawText);
   if (chemicals.length > 0) {
     return [];
   }
 
-  if (intent === "lookup_rule" && hasNamedSubstance(text)) {
+  if (CLASS_OR_PG_LOOKUP.test(message) && hasNamedSubstance(rawText)) {
+    return [];
+  }
+
+  if (hasNamedSubstance(rawText) && TRANSPORT_REQUIREMENTS_QUERY.test(textLower)) {
+    return [];
+  }
+
+  if (UN_ONLY_OR_PRIMARY.test(textLower) || /\bUN\s*\d{4}\b/i.test(message)) {
+    return [];
+  }
+
+  if (intent === "lookup_rule" && hasNamedSubstance(rawText)) {
     return [];
   }
 
   if (intent === "classify_item" || intent === "explain_requirement") {
-    if (!hasNamedSubstance(text)) {
+    if (!hasNamedSubstance(rawText)) {
       questions.push(
         "What is the substance or article (proper shipping name, UN number if known, or chemical identity/composition)?",
       );
     }
-    if (!HAS_PHYSICAL_STATE.test(text)) {
+    if (!HAS_PHYSICAL_STATE.test(textLower)) {
       questions.push("What is the physical state (solid, liquid, gas, aerosol, etc.)?");
     }
-    if (!HAS_HAZARD_HINT.test(text) && !COMMON_CHEMICAL_NAMES.test(text)) {
+    if (!HAS_HAZARD_HINT.test(textLower) && !COMMON_CHEMICAL_NAMES.test(textLower)) {
       questions.push(
         "What hazard properties or test data are known (e.g. flash point, pH, toxicity, corrosivity, lithium configuration)?",
       );
     }
-    if (!HAS_TRANSPORT_CONTEXT.test(text)) {
+    if (!HAS_TRANSPORT_CONTEXT.test(textLower)) {
       questions.push(
         "What is the intended transport context (mode, packaging type, and approximate quantity)?",
       );
     }
   }
 
-  if (intent === "classify_item" && VAGUE_PHRASES.test(message) && !HAS_SUBSTANCE_IDENTITY.test(text)) {
+  if (intent === "classify_item" && VAGUE_PHRASES.test(message) && !HAS_SUBSTANCE_IDENTITY.test(textLower)) {
     questions.push(
       "Can you provide specific identifiers (name, composition, or SDS details) instead of general terms like 'this product'?",
     );

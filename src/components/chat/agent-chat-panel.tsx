@@ -205,20 +205,20 @@ export function AgentChatPanel({
             disabled={loading}
           />
           {error && <p className="mt-2 text-sm text-[var(--color-ul-red)]">{error}</p>}
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex items-stretch gap-3">
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-ul-red)] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[var(--color-ul-red-hover)] disabled:opacity-50"
+              className="inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--color-ul-red)] px-5 text-xs font-semibold text-white transition hover:bg-[var(--color-ul-red-hover)] disabled:opacity-50 sm:gap-2 sm:text-sm"
             >
-              <SparkleIcon className="h-4 w-5 text-white" />
+              <SparkleIcon className="h-4 w-4 shrink-0 text-white sm:h-4 sm:w-5" />
               {loading ? "Thinking…" : `Ask ${AGENT_NAME}`}
             </button>
             <button
               type="button"
               onClick={reset}
               disabled={loading}
-              className="ml-auto inline-flex items-center rounded-lg bg-black px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50"
+              className="ml-auto inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-lg bg-black px-5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-50"
             >
               Reset
             </button>

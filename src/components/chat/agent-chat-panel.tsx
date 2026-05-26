@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AGENT_NAME, EXAMPLE_PROMPTS } from "@/lib/constants";
-import { useChat } from "@/lib/hooks/use-chat";
+import { useChat, type DisambiguationState } from "@/lib/hooks/use-chat";
+import type { DisambiguationOption } from "@/lib/types/citations";
 import { SparkleIcon } from "@/components/ui/sparkle-icon";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ export function AgentChatPanel({
   className,
   inputId = "agent-question",
 }: AgentChatPanelProps) {
-  const { input, setInput, messages, citations, loading, error, submit, askPrompt, reset } =
+  const { input, setInput, messages, citations, disambiguation, setDisambiguation, loading, error, submit, askPrompt, reset } =
     useChat(initialQuestion);
 
   const [showAllCitations, setShowAllCitations] = useState(false);
@@ -130,6 +131,16 @@ export function AgentChatPanel({
               );
             })}
 
+            {disambiguation && !loading && (
+              <DisambiguationButtons
+                disambiguation={disambiguation}
+                setDisambiguation={setDisambiguation}
+                onSelect={(option) => void submit(`UN ${option.un} — ${option.psn}`)}
+                onOther={() => void submit("Other — none of the above match my product")}
+                disabled={loading}
+              />
+            )}
+
             {citations.length > 0 && lastAssistant && (
               <div className="rounded-lg border border-[#e8d5c4] bg-[#f5ebe0] px-4 py-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-ul-neutral-700)]">
@@ -224,6 +235,65 @@ export function AgentChatPanel({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function DisambiguationButtons({
+  disambiguation,
+  setDisambiguation,
+  onSelect,
+  onOther,
+  disabled,
+}: {
+  disambiguation: DisambiguationState;
+  setDisambiguation: (s: DisambiguationState | null) => void;
+  onSelect: (option: DisambiguationOption) => void;
+  onOther: () => void;
+  disabled: boolean;
+}) {
+  const { options, showAll } = disambiguation;
+  const visible = showAll ? options : options.slice(0, 3);
+  const hasMore = options.length > 3 && !showAll;
+
+  return (
+    <div className="rounded-lg border border-[#e8d5c4] bg-[#f5ebe0] px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-ul-neutral-700)]">
+        Select a match
+      </p>
+      <div className="mt-2 flex flex-col gap-2">
+        {visible.map((opt) => (
+          <button
+            key={`${opt.un}:${opt.psn}`}
+            type="button"
+            disabled={disabled}
+            onClick={() => onSelect(opt)}
+            className="w-full rounded-lg border border-[var(--color-ul-neutral-200)] bg-white px-3 py-2.5 text-left text-sm transition hover:border-[var(--color-ul-maroon)] hover:bg-[var(--color-ul-tint)] disabled:opacity-50"
+          >
+            <span className="font-semibold text-[var(--color-ul-maroon-dark)]">UN {opt.un}</span>
+            <span className="ml-2 text-[var(--color-ul-neutral-700)]">{opt.psn}</span>
+            <span className="ml-2 text-xs text-[var(--color-ul-neutral-500)]">Class {opt.hazardClass}</span>
+          </button>
+        ))}
+        {hasMore && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setDisambiguation({ ...disambiguation, showAll: true })}
+            className="w-full rounded-lg border border-[var(--color-ul-neutral-200)] bg-white px-3 py-2 text-center text-sm font-semibold text-[var(--color-ul-maroon-dark)] transition hover:border-[var(--color-ul-maroon)] hover:bg-[var(--color-ul-tint)] disabled:opacity-50"
+          >
+            More ({options.length - 3} additional)
+          </button>
+        )}
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onOther}
+          className="w-full rounded-lg border border-[var(--color-ul-neutral-200)] bg-white px-3 py-2 text-center text-sm font-semibold text-[var(--color-ul-neutral-700)] transition hover:border-[var(--color-ul-maroon)] hover:bg-[var(--color-ul-tint)] disabled:opacity-50"
+        >
+          Other — none of these match
+        </button>
       </div>
     </div>
   );

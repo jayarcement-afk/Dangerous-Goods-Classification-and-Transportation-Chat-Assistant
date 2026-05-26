@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { ChatResponse, Citation } from "@/lib/types/citations";
+import type { ChatResponse, Citation, DisambiguationOption } from "@/lib/types/citations";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -9,10 +9,16 @@ export type ChatMessage = {
   response?: ChatResponse;
 };
 
+export type DisambiguationState = {
+  options: DisambiguationOption[];
+  showAll: boolean;
+};
+
 export function useChat(initialQuestion = "") {
   const [input, setInput] = useState(initialQuestion);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [citations, setCitations] = useState<Citation[]>([]);
+  const [disambiguation, setDisambiguation] = useState<DisambiguationState | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,31 +49,39 @@ export function useChat(initialQuestion = "") {
 
         let assistantText = "";
         if (data.status === "clarification") {
-          const profileLines =
-            data.substanceProfile?.assumptions?.length &&
-            data.substanceProfile.status !== "ambiguous"
-              ? [
-                  "",
-                  "Working assumptions (correct me in chat if anything is wrong):",
-                  ...data.substanceProfile.assumptions.map((a) => `• ${a}`),
-                ]
-              : [];
-          assistantText = [
-            data.substanceProfile?.confirmationNotice ||
-              "I need more information before I can provide a source-backed answer:",
-            ...profileLines,
-            "",
-            ...(data.clarifyingQuestions ?? []).map((q) => `• ${q}`),
-            "",
-            data.limitations ?? "",
-          ]
-            .filter((line, i, arr) => line !== "" || (i > 0 && arr[i - 1] !== ""))
-            .join("\n");
+          if (data.disambiguationOptions?.length) {
+            assistantText = data.limitations ?? "Multiple entries match. Select one:";
+            setDisambiguation({ options: data.disambiguationOptions, showAll: false });
+          } else {
+            setDisambiguation(null);
+            const profileLines =
+              data.substanceProfile?.assumptions?.length &&
+              data.substanceProfile.status !== "ambiguous"
+                ? [
+                    "",
+                    "Working assumptions (correct me in chat if anything is wrong):",
+                    ...data.substanceProfile.assumptions.map((a) => `• ${a}`),
+                  ]
+                : [];
+            assistantText = [
+              data.substanceProfile?.confirmationNotice ||
+                "I need more information before I can provide a source-backed answer:",
+              ...profileLines,
+              "",
+              ...(data.clarifyingQuestions ?? []).map((q) => `• ${q}`),
+              "",
+              data.limitations ?? "",
+            ]
+              .filter((line, i, arr) => line !== "" || (i > 0 && arr[i - 1] !== ""))
+              .join("\n");
+          }
           setCitations([]);
         } else if (data.status === "answer" && data.answer) {
+          setDisambiguation(null);
           assistantText = data.answer;
           setCitations(data.citations ?? []);
         } else {
+          setDisambiguation(null);
           assistantText = data.refusalReason ?? "I cannot answer without sufficient cited sources.";
           setCitations([]);
           if (!res.ok) {
@@ -98,6 +112,7 @@ export function useChat(initialQuestion = "") {
   const reset = useCallback(() => {
     setMessages([]);
     setCitations([]);
+    setDisambiguation(null);
     setError(null);
     setInput("");
   }, []);
@@ -107,6 +122,8 @@ export function useChat(initialQuestion = "") {
     setInput,
     messages,
     citations,
+    disambiguation,
+    setDisambiguation,
     loading,
     error,
     submit,

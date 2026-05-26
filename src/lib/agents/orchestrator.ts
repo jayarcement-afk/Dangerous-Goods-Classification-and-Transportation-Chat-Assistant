@@ -175,14 +175,23 @@ function clarification(
   if (profile?.applicable && profile.confirmationNotice) {
     limitations = `${profile.confirmationNotice}\n\n${limitations}`;
   }
-  if (profile?.applicable && profile.ambiguities.length > 0) {
+  if (profile?.applicable && profile.ambiguities.length > 0 && !profile.disambiguationCandidates?.length) {
     limitations = `Possible variants: ${profile.ambiguities.join("; ")}\n\n${limitations}`;
   }
+
+  const disambiguationOptions = profile?.disambiguationCandidates?.map((c) => ({
+    un: c.un,
+    psn: c.psn,
+    hazardClass: c.hazardClass,
+  }));
 
   return {
     status: "clarification",
     clarifyingQuestions: questions,
-    limitations,
+    disambiguationOptions: disambiguationOptions?.length ? disambiguationOptions : undefined,
+    limitations: profile?.disambiguationCandidates?.length
+      ? `Multiple Table C entries match. Select one below:`
+      : limitations,
     modelVersion,
     promptVersion: PROMPT_VERSION,
     intent: intake.intent,

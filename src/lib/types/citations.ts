@@ -29,11 +29,18 @@ export type WorkingSubstanceSummary = {
   confirmationNotice: string;
 };
 
+export type DisambiguationOption = {
+  un: string;
+  psn: string;
+  hazardClass: string;
+};
+
 export type ChatResponse = {
   status: "answer" | "clarification" | "refusal";
   answer?: string;
   citations?: Citation[];
   clarifyingQuestions?: string[];
+  disambiguationOptions?: DisambiguationOption[];
   refusalReason?: string;
   limitations?: string;
   intent?: string;

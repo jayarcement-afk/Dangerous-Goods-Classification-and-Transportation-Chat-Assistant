@@ -37,6 +37,12 @@ export type SubstanceAssumption = {
   confidence: "high" | "medium" | "low";
 };
 
+export type DisambiguationCandidate = {
+  un: string;
+  psn: string;
+  hazardClass: string;
+};
+
 export type SubstanceProfile = {
   applicable: boolean;
   status: SubstanceProfileStatus;
@@ -51,6 +57,8 @@ export type SubstanceProfile = {
   workingAssumptions: SubstanceAssumption[];
   ambiguities: string[];
   clarifyingQuestions: string[];
+  /** Clickable options when multiple Table C matches exist */
+  disambiguationCandidates?: DisambiguationCandidate[];
   /** Extra phrases to improve Orange Book vector search */
   retrievalHints: string;
   /** Shown to the user so they can correct details in chat */
@@ -395,6 +403,10 @@ async function resolveChemicalProfileFromTableC(chemical: string): Promise<Subst
 
   const mustClarify = lookup.ambiguous;
 
+  const candidates: DisambiguationCandidate[] | undefined = lookup.ambiguous
+    ? deduplicateDisambiguationCandidates(lookup.matchingRows)
+    : undefined;
+
   return {
     ...profile,
     applicable: true,
@@ -418,15 +430,25 @@ async function resolveChemicalProfileFromTableC(chemical: string): Promise<Subst
     ],
     ambiguities: lookup.ambiguous && lookup.ambiguityNote ? [lookup.ambiguityNote] : [],
     clarifyingQuestions: lookup.ambiguous
-      ? [
-          "Which UN entry applies — pure substance or a specific formulation?",
-          "What is the concentration if this is a mixture?",
-        ]
+      ? ["Select the correct entry below, or choose Other for more help."]
       : [],
+    disambiguationCandidates: candidates,
     confirmationNotice: `Looked up ${chemical} in ADN Table C: UN ${row.un}, ${entry.properShippingNames[0]}. Reply in chat to correct any detail.`,
     mustClarifyBeforeAnswer: mustClarify,
     retrievalHints: `${chemical} UN ${row.un} ${entry.properShippingNames.join(" ")} Class ${entry.hazardClass} Table C`,
   };
+}
+
+function deduplicateDisambiguationCandidates(rows: { un: string; psn: string; hazardClass: string }[]): DisambiguationCandidate[] {
+  const seen = new Set<string>();
+  const result: DisambiguationCandidate[] = [];
+  for (const r of rows) {
+    const key = `${r.un}:${r.psn}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push({ un: r.un, psn: r.psn, hazardClass: r.hazardClass });
+  }
+  return result;
 }
 
 /**

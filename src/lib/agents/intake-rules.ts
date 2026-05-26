@@ -23,8 +23,11 @@ const COMMON_CHEMICAL_NAMES =
 const HAS_SUBSTANCE_IDENTITY =
   /\b(un\s*\d{4}|proper shipping name|psn|cas\s*[\d-]+|trade name|product name|chemical name|composition|ingredient|contains?\s+\d|solution of|mixture of)\b/i;
 
+/** Bare 4-digit number in the 1000–3600 UN range (common in follow-up messages) */
+const BARE_UN_LIKE = /(?:^|[\s(,;])(\d{4})(?:[\s),.;:!?]|$)/;
+
 /** User message is primarily a UN number lookup */
-const UN_ONLY_OR_PRIMARY = /\b(?:what\s+is|tell\s+me\s+about|details?\s+(?:for|on)|properties?\s+(?:of|for)|info(?:rmation)?\s+(?:on|for))?\s*UN\s*\d{4}\b/i;
+const UN_ONLY_OR_PRIMARY = /\b(?:what\s+is|tell\s+me\s+about|details?\s+(?:for|on)|properties?\s+(?:of|for)|info(?:rmation)?\s+(?:on|for))?\s*(?:UN\s*)?\d{4}\b/i;
 
 const TRANSPORT_REQUIREMENTS_QUERY =
   /\b(transport|transportation|requirements?|provisions?|carriage|packaging|packing|marking|labeling|labelling|placard|documentation)\b/i;
@@ -97,11 +100,21 @@ export function hasNamedSubstance(text: string): boolean {
 /** User provided an actual material identity (not only asking about PSN/UN in general). */
 export function hasConcreteSubstanceIdentity(text: string): boolean {
   if (/\bUN\s*\d{4}\b/i.test(text)) return true;
+  if (looksLikeBareUnNumber(text)) return true;
   if (extractChemicalNamesFromText(text).length > 0) return true;
   if (COMMON_CHEMICAL_NAMES.test(text)) return true;
   if (/\bcas\s*#?\s*[\d-]+/i.test(text)) return true;
   if (/\b(?:trade|product|brand)\s+name\s*[:=]\s*\S+/i.test(text)) return true;
   return false;
+}
+
+function looksLikeBareUnNumber(text: string): boolean {
+  const m = BARE_UN_LIKE.exec(text);
+  if (!m || !m[1]) return false;
+  const n = parseInt(m[1], 10);
+  if (n < 1000 || n > 3600) return false;
+  if (n >= 1900 && n <= 2100 && text.trim().length > 20) return false;
+  return true;
 }
 
 const CLASS_OR_PG_LOOKUP =
@@ -136,7 +149,7 @@ export function detectHeuristicClarification(
     return [];
   }
 
-  if (UN_ONLY_OR_PRIMARY.test(textLower) || /\bUN\s*\d{4}\b/i.test(message)) {
+  if (UN_ONLY_OR_PRIMARY.test(textLower) || /\bUN\s*\d{4}\b/i.test(message) || looksLikeBareUnNumber(message)) {
     return [];
   }
 

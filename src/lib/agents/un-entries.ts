@@ -313,7 +313,11 @@ export function isPrimarilyUnNumberQuery(message: string, _fullContext?: string)
   const unNumbers = extractUnNumbersFromMessage(message);
   if (unNumbers.length !== 1) return false;
 
-  const withoutUn = message.replace(/\bUN\s*0*\d{4}\b/gi, "").replace(/\s+/g, " ").trim();
+  const withoutUn = message
+    .replace(/\bUN\s*0*\d{4}\b/gi, "")
+    .replace(/(?:^|[\s])(\d{4})(?:[\s]|$)/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (withoutUn.length === 0) return true;
 
   return (
@@ -342,5 +346,27 @@ export function extractUnNumbersFromText(text: string): string[] {
       if (match[1]) found.push(match[1]);
     }
   }
+
+  if (found.length === 0) {
+    const trimmed = text.replace(/\s+/g, " ").trim();
+    const barePattern = /(?:^|[\s(,;])(\d{4})(?:[\s),.;:!?]|$)/g;
+    let match: RegExpExecArray | null;
+    while ((match = barePattern.exec(text)) !== null) {
+      const num = match[1];
+      const n = parseInt(num, 10);
+      if (n >= 1000 && n <= 3600 && !isLikelyYear(n, trimmed)) {
+        found.push(num);
+      }
+    }
+  }
+
   return [...new Set(found)];
+}
+
+function isLikelyYear(n: number, text: string): boolean {
+  if (n >= 1900 && n <= 2100) {
+    if (/\b(year|published|edition|rev\.?|version|dated|in)\s/i.test(text)) return true;
+    if (text.length > 20) return true;
+  }
+  return false;
 }

@@ -59,7 +59,17 @@ export type SubstanceProfile = {
   userCorrectionsNoted: boolean;
 };
 
-const UN_NUMBER_PATTERN = /\bUN\s*0*(\d{4})\b/i;
+const UN_NUMBER_PATTERN = /\bUN\s*0*\d{4}\b/i;
+
+function messageHasUnNumber(text: string): boolean {
+  if (UN_NUMBER_PATTERN.test(text)) return true;
+  const bare = /(?:^|[\s(,;])(\d{4})(?:[\s),.;:!?]|$)/.exec(text);
+  if (bare?.[1]) {
+    const n = parseInt(bare[1], 10);
+    if (n >= 1000 && n <= 3600) return true;
+  }
+  return false;
+}
 
 /** Well-known chemicals/products the user may name without a UN number */
 export const COMMON_CHEMICAL_NAMES =
@@ -161,7 +171,7 @@ Return JSON only:
 
 export function mentionsSubstanceOrUn(message: string, fullContext: string): boolean {
   const text = `${fullContext}\n${message}`;
-  if (UN_NUMBER_PATTERN.test(text)) return true;
+  if (messageHasUnNumber(text)) return true;
   if (COMMON_CHEMICAL_NAMES.test(text)) return true;
   if (extractChemicalNamesFromText(text).length > 0) return true;
   return SUBSTANCE_PROBE.test(text);

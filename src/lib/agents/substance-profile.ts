@@ -1104,6 +1104,7 @@ export function shouldBlockForClarification(
   if (
     message &&
     CLASS_OR_PG_LOOKUP.test(message) &&
+    !profile.disambiguationCandidates?.length &&
     (profile.identifiers.unNumbers.length > 0 ||
       extractChemicalNamesFromText(contextText).length > 0)
   ) {

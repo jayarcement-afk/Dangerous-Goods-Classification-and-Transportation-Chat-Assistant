@@ -12,9 +12,10 @@ export type TableCRow = {
 /**
  * ADN Table C row pattern: UN | Name | Class (3a) | Classification code (3b)
  * Example: 1093 ACRYLONITRILE, STABILIZED 3 FT1
+ * PSN may contain %, °, <, >, ≤, ≥, /, etc. (e.g. "with more than 51% acid")
  */
 const TABLE_C_ROW_RE =
-  /\b(\d{4})\s+([A-Z][A-Za-z0-9,().\- ]{4,120}?)\s+(\d(?:\.\d)?)\s+([A-Z0-9]{2,4})\b/g;
+  /\b(\d{4})\s+([A-Z][A-Za-z0-9,().\-/%°<>≤≥ ]{4,120}?)\s+(\d(?:\.\d)?)\s+([A-Z0-9]{2,4})\b/g;
 
 /** Fragments from broken PDF extraction — not valid proper shipping names alone */
 const PSN_FRAGMENT_BLOCKLIST =

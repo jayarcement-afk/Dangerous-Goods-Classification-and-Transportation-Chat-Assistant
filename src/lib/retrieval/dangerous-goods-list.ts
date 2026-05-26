@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CHAT_MODEL, embedQuery, getOpenAI } from "@/lib/openai/client";
-import { DOCUMENT_TYPE_DANGEROUS_GOODS_LIST } from "@/lib/constants";
+import { DOCUMENT_TYPE_DANGEROUS_GOODS_LIST, DOCUMENT_TYPE_ORANGE_BOOK } from "@/lib/constants";
 import type { UnEntryLookup } from "@/lib/agents/un-entries";
 import { isInvalidPsnForUn } from "@/lib/agents/un-entries";
 import type { RetrievedChunk } from "@/lib/types/citations";
@@ -243,7 +243,7 @@ export type ChemicalLookupResult = {
   ambiguityNote?: string;
 };
 
-/** Look up chemical name in Table C → UN, PSN, class (same source as UN number lookup). */
+/** Look up chemical name in Table C + Orange Book → UN, PSN, class. */
 export async function lookupChemicalFromDangerousGoodsList(
   chemical: string,
 ): Promise<ChemicalLookupResult | null> {
@@ -260,8 +260,11 @@ export async function lookupChemicalFromDangerousGoodsList(
     chunks = chunks.filter((c) => pattern.test(c.content));
   }
 
-  const allRows = chunks.flatMap((c) => extractAllTableCRows(c.content));
-  const matchingRows = selectRowsForChemical(allRows, normalized);
+  const orangeBookChunks = await retrieveOrangeBookChunksForChemical(normalized);
+  const allChunks = [...chunks, ...orangeBookChunks];
+
+  const allRows = allChunks.flatMap((c) => extractAllTableCRows(c.content));
+  const matchingRows = deduplicateTableCRows(selectRowsForChemical(allRows, normalized));
   if (matchingRows.length === 0) return null;
 
   if (matchingRows.length === 1) {
@@ -285,12 +288,47 @@ export async function lookupChemicalFromDangerousGoodsList(
     ambiguous: uniqueUn.length > 1,
     ambiguityNote:
       uniqueUn.length > 1
-        ? `Table C lists multiple UN entries containing ${normalized}: ${matchingRows
-            .slice(0, 4)
+        ? `Multiple UN entries match ${normalized}: ${matchingRows
+            .slice(0, 6)
             .map((r) => `UN ${r.un} (${r.psn})`)
-            .join("; ")}. Reply with concentration or the exact product form to narrow.`
+            .join("; ")}. Select the correct one or provide more details.`
         : undefined,
   };
+}
+
+async function retrieveOrangeBookChunksForChemical(chemical: string): Promise<RetrievedChunk[]> {
+  const embedding = await embedQuery(
+    `${chemical} UN number proper shipping name dangerous goods list classification`,
+  );
+  const supabase = createAdminClient();
+  const { data } = await supabase.rpc("match_chunks", {
+    query_embedding: embedding,
+    match_count: 8,
+    match_threshold: 0.55,
+    filter_document_type: DOCUMENT_TYPE_ORANGE_BOOK,
+  });
+  if (!data) return [];
+  const pattern = new RegExp(`\\b${chemical.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+  return (data as RetrievedChunk[]).filter((c) => pattern.test(c.content));
+}
+
+function deduplicateTableCRows(rows: TableCRow[]): TableCRow[] {
+  const byUn = new Map<string, TableCRow>();
+  for (const r of rows) {
+    const existing = byUn.get(r.un);
+    if (!existing) {
+      byUn.set(r.un, r);
+    } else {
+      const existingClean = !/ \d+(\.\d)? /.test(existing.psn);
+      const newClean = !/ \d+(\.\d)? /.test(r.psn);
+      if (!existingClean && newClean) {
+        byUn.set(r.un, r);
+      } else if (existingClean === newClean && r.psn.length < existing.psn.length) {
+        byUn.set(r.un, r);
+      }
+    }
+  }
+  return [...byUn.values()];
 }
 
 /** Default substance lookup: ADN Table C dangerous goods list (when ingested). */

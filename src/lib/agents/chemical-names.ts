@@ -79,6 +79,19 @@ const NOT_CHEMICAL = new Set([
   "OVER",
   "UNDER",
   "PER",
+  "CORRECT",
+  "PROPER",
+  "SHIPPING",
+  "NAME",
+  "PACKING",
+  "GROUP",
+  "LABEL",
+  "MARKING",
+  "REQUIRED",
+  "REQUIREMENTS",
+  "REGULATIONS",
+  "SECTION",
+  "CHAPTER",
 ]);
 
 /** Second word of a PSN that is not meaningful alone (e.g. ETHER in DIETHYL ETHER). */
@@ -123,7 +136,7 @@ const EMBEDDED_CHEMICAL =
 
 /** e.g. "class for acetic anhydride" (common on mobile keyboards) */
 const CHEMICAL_AFTER_FOR =
-  /\b(?:for|of)\s+([A-Za-z][A-Za-z0-9-]+(?:\s+[A-Za-z][A-Za-z0-9-]+){0,4})\b/gi;
+  /\b(?:class|packing group|pg|hazard)\s+(?:for|of)\s+([A-Za-z][A-Za-z0-9-]+(?:\s+[A-Za-z][A-Za-z0-9-]+){0,4})\b/gi;
 
 export function normalizeChemicalName(name: string): string {
   return name.trim().replace(/\s+/g, " ").toUpperCase();

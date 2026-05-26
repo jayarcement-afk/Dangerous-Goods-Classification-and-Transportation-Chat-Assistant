@@ -240,6 +240,29 @@ export function AgentChatPanel({
   );
 }
 
+function DisambiguationOptionButton({
+  opt,
+  disabled,
+  onSelect,
+}: {
+  opt: DisambiguationOption;
+  disabled: boolean;
+  onSelect: (option: DisambiguationOption) => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => onSelect(opt)}
+      className="w-full rounded-lg border border-[var(--color-ul-neutral-200)] bg-white px-3 py-2.5 text-left text-sm transition hover:border-[var(--color-ul-maroon)] hover:bg-[var(--color-ul-tint)] disabled:opacity-50"
+    >
+      <span className="font-semibold text-[var(--color-ul-maroon-dark)]">UN {opt.un}</span>
+      <span className="ml-2 text-[var(--color-ul-neutral-700)]">{opt.psn}</span>
+      <span className="ml-2 text-xs text-[var(--color-ul-neutral-500)]">Class {opt.hazardClass}</span>
+    </button>
+  );
+}
+
 function DisambiguationButtons({
   disambiguation,
   setDisambiguation,
@@ -254,8 +277,9 @@ function DisambiguationButtons({
   disabled: boolean;
 }) {
   const { options, showAll } = disambiguation;
-  const visible = showAll ? options : options.slice(0, 3);
-  const hasMore = options.length > 3 && !showAll;
+  const topOptions = options.slice(0, 2);
+  const moreOptions = options.slice(2);
+  const hasMore = moreOptions.length > 0;
 
   return (
     <div className="rounded-lg border border-[#e8d5c4] bg-[#f5ebe0] px-4 py-3">
@@ -263,28 +287,43 @@ function DisambiguationButtons({
         Select a match
       </p>
       <div className="mt-2 flex flex-col gap-2">
-        {visible.map((opt) => (
-          <button
+        {topOptions.map((opt) => (
+          <DisambiguationOptionButton
             key={`${opt.un}:${opt.psn}`}
-            type="button"
+            opt={opt}
             disabled={disabled}
-            onClick={() => onSelect(opt)}
-            className="w-full rounded-lg border border-[var(--color-ul-neutral-200)] bg-white px-3 py-2.5 text-left text-sm transition hover:border-[var(--color-ul-maroon)] hover:bg-[var(--color-ul-tint)] disabled:opacity-50"
-          >
-            <span className="font-semibold text-[var(--color-ul-maroon-dark)]">UN {opt.un}</span>
-            <span className="ml-2 text-[var(--color-ul-neutral-700)]">{opt.psn}</span>
-            <span className="ml-2 text-xs text-[var(--color-ul-neutral-500)]">Class {opt.hazardClass}</span>
-          </button>
+            onSelect={onSelect}
+          />
         ))}
-        {hasMore && (
+        {hasMore && !showAll && (
           <button
             type="button"
             disabled={disabled}
             onClick={() => setDisambiguation({ ...disambiguation, showAll: true })}
             className="w-full rounded-lg border border-[var(--color-ul-neutral-200)] bg-white px-3 py-2 text-center text-sm font-semibold text-[var(--color-ul-maroon-dark)] transition hover:border-[var(--color-ul-maroon)] hover:bg-[var(--color-ul-tint)] disabled:opacity-50"
           >
-            More ({options.length - 3} additional)
+            More ({moreOptions.length} additional)
           </button>
+        )}
+        {hasMore && showAll && (
+          <>
+            {moreOptions.map((opt) => (
+              <DisambiguationOptionButton
+                key={`${opt.un}:${opt.psn}`}
+                opt={opt}
+                disabled={disabled}
+                onSelect={onSelect}
+              />
+            ))}
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setDisambiguation({ ...disambiguation, showAll: false })}
+              className="w-full rounded-lg border border-[var(--color-ul-neutral-200)] bg-white px-3 py-2 text-center text-sm font-semibold text-[var(--color-ul-maroon-dark)] transition hover:border-[var(--color-ul-maroon)] hover:bg-[var(--color-ul-tint)] disabled:opacity-50"
+            >
+              Show fewer
+            </button>
+          </>
         )}
         <button
           type="button"

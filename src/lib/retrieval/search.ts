@@ -116,7 +116,8 @@ export async function retrieveWithFallback(
   const retrieveOpts = substanceProfile ? { substanceProfile } : undefined;
   const primary = await retrieveChunks(query, context, retrieveOpts);
   if (primary.length >= 3 && (primary[0]?.similarity ?? 0) >= 0.22) {
-    return primary;
+    const withTableC = await mergeDangerousGoodsListChunks(primary, substanceProfile);
+    return withTableC.sort((a, b) => b.similarity - a.similarity).slice(0, RETRIEVAL_MATCH_COUNT);
   }
 
   const fallback = await retrieveChunks(query, context, {

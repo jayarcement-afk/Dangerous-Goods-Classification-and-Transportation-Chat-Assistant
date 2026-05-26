@@ -16,6 +16,7 @@
     "db:types": "echo 'Run: npx supabase gen types typescript --local > src/lib/database.types.ts'"
   },
   "dependencies": {
+    "@ghs-hazard-pictograms/assets": "^1.1.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
     "clsx": "^2.1.1",

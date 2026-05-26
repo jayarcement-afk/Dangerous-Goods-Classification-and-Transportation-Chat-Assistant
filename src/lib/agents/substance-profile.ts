@@ -361,6 +361,11 @@ async function resolveChemicalProfileWithHints(
       { field: "Chemical name (user)", value: chemical, confidence: "high" },
       { field: "UN number", value: `UN ${row.un}`, confidence: "high" },
       { field: "Proper shipping name", value: row.psn, confidence: "high" },
+      {
+        field: "Hazard class",
+        value: entry.division ? `Class ${entry.hazardClass} (${entry.division})` : `Class ${entry.hazardClass}`,
+        confidence: "high",
+      },
       ...(text.includes("liquid")
         ? [{ field: "Physical state", value: "Liquid (user)", confidence: "high" as const }]
         : []),
@@ -372,7 +377,7 @@ async function resolveChemicalProfileWithHints(
     clarifyingQuestions: [],
     confirmationNotice: `Using UN ${row.un}, ${row.psn} for ${chemical} based on your clarification. Reply in chat to correct any detail.`,
     mustClarifyBeforeAnswer: false,
-    retrievalHints: `${chemical} UN ${row.un} ${row.psn} Table C`,
+    retrievalHints: `${chemical} UN ${row.un} ${row.psn} Class ${entry.hazardClass} Table C`,
   };
 }
 

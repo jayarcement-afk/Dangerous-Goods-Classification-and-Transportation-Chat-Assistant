@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AGENT_NAME, EXAMPLE_PROMPTS } from "@/lib/constants";
 import { useChat, type DisambiguationState } from "@/lib/hooks/use-chat";
 import type { DisambiguationOption } from "@/lib/types/citations";
+import { HazardLabel } from "@/components/chat/hazard-label";
 import { SparkleIcon } from "@/components/ui/sparkle-icon";
 import { cn } from "@/lib/utils";
 
@@ -99,6 +100,10 @@ export function AgentChatPanel({
             )}
             {messages.map((m, i) => {
               const isUser = m.role === "user";
+              const showHazardLabel =
+                !isUser &&
+                m.response?.status === "answer" &&
+                m.response?.substanceProfile?.assumptions?.length;
               return (
                 <div
                   key={i}
@@ -127,6 +132,11 @@ export function AgentChatPanel({
                   >
                     {m.content}
                   </p>
+                  {showHazardLabel && (
+                    <div className="mt-3 flex justify-start">
+                      <HazardLabel assumptions={m.response!.substanceProfile!.assumptions} />
+                    </div>
+                  )}
                 </div>
               );
             })}

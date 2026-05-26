@@ -34,6 +34,7 @@ export function extractAllTableCRows(text: string): TableCRow[] {
     const classificationCode = match[4];
 
     if (!isPlausiblePsn(psn)) continue;
+    if (/^\d+$/.test(classificationCode)) continue;
 
     rows.push({
       un,
@@ -87,7 +88,8 @@ export function scoreChemicalMatch(row: TableCRow, chemical: string): number {
 
   if (psn === needle) return 100;
   if (psn.startsWith(`${needle},`)) return 95;
-  if (needle.startsWith(psn) || psn.startsWith(needle)) return 96;
+  if (psn.startsWith(`${needle} `)) return 95;
+  if (needle.startsWith(`${psn},`) || needle.startsWith(`${psn} `)) return 96;
 
   const primary = psn.split(",")[0]?.trim() ?? psn;
   if (primary === needle) return 98;

@@ -27,7 +27,7 @@ export function AgentHero() {
           </div>
 
           <div className="w-full min-w-0 flex-1 text-left">
-            <h1 className="ul-section-title flex items-center gap-3 md:flex-nowrap">
+            <h1 className="ul-section-title flex items-start gap-3 md:flex-nowrap">
               <SparkleIcon className="h-7 w-8 shrink-0 text-[var(--color-ul-maroon-dark)]" />
               <span>{AGENT_NAME}</span>
             </h1>

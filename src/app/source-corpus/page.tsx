@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { AGENT_NAME, SOURCE_AUTHORITY, SOURCE_CORPUS } from "@/lib/constants";
+import { AGENT_NAME_BODY, SOURCE_AUTHORITY, SOURCE_CORPUS } from "@/lib/constants";
 
 export const metadata = {
   title: "Source corpus — DG Assistant",
@@ -17,7 +17,7 @@ export default function SourceCorpusPage() {
           <p className="ul-section-eyebrow">Policy</p>
           <h1 className="ul-section-title mt-2">Source corpus</h1>
           <p className="mt-4 text-[var(--color-ul-neutral-700)] leading-relaxed">
-            {AGENT_NAME} indexes three official UN dangerous goods publications for retrieval and
+            {AGENT_NAME_BODY} indexes three official UN dangerous goods publications for retrieval and
             citation.
             Answers are grounded in the sources below. Each substantive claim in chat should cite
             retrieved passages from this corpus — not outside regulations or model-only guesses.

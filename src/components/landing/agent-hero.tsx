@@ -13,7 +13,7 @@ export function AgentHero() {
           <div className="relative w-[160px] shrink-0 sm:w-[180px] md:w-[200px] lg:w-[220px]">
             <Image
               src="/ultrus-dg-agent-robot.png"
-              alt="ULTRUS DG Agent robot assistant"
+              alt="ULTRUS Dangerous Goods Agent robot assistant"
               width={605}
               height={699}
               priority

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AGENT_NAME, EXAMPLE_PROMPTS } from "@/lib/constants";
+import { AGENT_NAME_SHORT, EXAMPLE_PROMPTS } from "@/lib/constants";
 import { useChat, type DisambiguationState } from "@/lib/hooks/use-chat";
 import type { DisambiguationOption } from "@/lib/types/citations";
 import { HazardLabel } from "@/components/chat/hazard-label";
@@ -71,7 +71,7 @@ export function AgentChatPanel({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <SparkleIcon className="h-5 w-6 text-white" />
-            <h2 className="text-sm font-semibold text-white">{AGENT_NAME}</h2>
+            <h2 className="text-sm font-semibold text-white">{AGENT_NAME_SHORT}</h2>
           </div>
           {citations.length > 0 && (
             <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white">
@@ -121,7 +121,7 @@ export function AgentChatPanel({
                         : "text-xs font-semibold uppercase tracking-wider text-[var(--color-ul-neutral-700)]"
                     }
                   >
-                    {isUser ? "You" : AGENT_NAME}
+                    {isUser ? "You" : AGENT_NAME_SHORT}
                   </p>
                   <p
                     className={
@@ -233,7 +233,7 @@ export function AgentChatPanel({
               className="inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--color-ul-red)] px-5 text-xs font-semibold text-white transition hover:bg-[var(--color-ul-red-hover)] disabled:opacity-50 sm:gap-2 sm:text-sm"
             >
               <SparkleIcon className="h-4 w-4 shrink-0 text-white sm:h-4 sm:w-5" />
-              {loading ? "Thinking…" : `Ask ${AGENT_NAME}`}
+              {loading ? "Thinking…" : `Ask ${AGENT_NAME_SHORT}`}
             </button>
             <button
               type="button"

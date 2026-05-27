@@ -1,10 +1,16 @@
 export const APP_NAME =
   "Dangerous Goods Classification and Transportation Assistant";
 
-export const AGENT_NAME = "ULTRUS DG Agent";
+export const AGENT_NAME = "ULTRUS Dangerous Goods Agent";
+
+/** Short form for chat header, message labels, and Ask button */
+export const AGENT_NAME_SHORT = "ULTRUS DG Agent";
+
+/** Spelled-out name with (DG) abbreviation — for body copy under the title */
+export const AGENT_NAME_BODY = "ULTRUS Dangerous Goods (DG) Agent";
 
 export const AGENT_DESCRIPTION =
-  "ULTRUS DG Agent is your always-on dangerous goods compliance assistant, delivering trusted guidance for the safe transportation of hazardous materials. It empowers transportation, safety, and operations teams to move faster with greater accuracy, consistency, and confidence while helping protect people, cargo, and the environment.";
+  "ULTRUS Dangerous Goods (DG) Agent is your always-on dangerous goods compliance assistant, delivering trusted guidance for the safe transportation of hazardous materials. It empowers transportation, safety, and operations teams to move faster with greater accuracy, consistency, and confidence while helping protect people, cargo, and the environment.";
 
 export const SOURCE_AUTHORITY =
   "UN Recommendations on the Transport of Dangerous Goods — Model Regulations (Orange Book), Rev. 24";

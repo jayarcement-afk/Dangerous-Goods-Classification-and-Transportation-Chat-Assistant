@@ -124,7 +124,7 @@ export const V1_FLOWS = [
 
 export const EXAMPLE_PROMPTS = [
   "Is my product classified as a dangerous good?",
-  "What is the correct Proper Shipping Name and UN Number?",
+  "What is the Proper Shipping Name and UN Number?",
   "What is the Packing Group (PG)?",
 ] as const;
 
